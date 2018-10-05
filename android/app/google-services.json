@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "758103480393",
+    "firebase_url": "https://kong-random-chat.firebaseio.com",
+    "project_id": "kong-random-chat",
+    "storage_bucket": "kong-random-chat.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:758103480393:android:3ccbeb810163adec",
+        "android_client_info": {
+          "package_name": "kong.sampleflutterchatapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "758103480393-6afhrdof4tjm5j0vmb0hprs6mohbke11.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfTZN_Y3YFWawqWWNyig0MQRlxd6zXAh0"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
