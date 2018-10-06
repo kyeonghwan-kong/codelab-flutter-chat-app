@@ -1,192 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-const String _name = "Your Name";
+void main() => runApp(new MyApp());
 
-void main() => runApp(new FriendlychatApp());
-
-final ThemeData kIOSTheme = new ThemeData(
-  primarySwatch: Colors.orange,
-  primaryColor: Colors.grey[100],
-  primaryColorBrightness: Brightness.light,
-);
-
-final ThemeData kDefaultTheme = new ThemeData(
-//  primarySwatch: Colors.purple,
-//  accentColor: Colors.orangeAccent[400],
-  primarySwatch: Colors.orange,
-  primaryColor: Colors.grey[100],
-  primaryColorBrightness: Brightness.light,
-);
-
-class FriendlychatApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
-      title: "Sample chat",
-      theme: defaultTargetPlatform == TargetPlatform.iOS
-          ? kIOSTheme
-          : kDefaultTheme,
-      home: new ChatScreen(),
+      title: 'Baby Names',
+      home: const MyHomePage(title: 'Baby Name Votes'),
     );
   }
 }
 
-class ChatScreen extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() => new ChatScreenState();
-}
-
-class ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin {
-  final List<ChatMessage> _messages = <ChatMessage>[];
-  final TextEditingController _textController = new TextEditingController();
-  bool _isComposing = false;
+class MyHomePage extends StatelessWidget {
+  const MyHomePage({Key key, this.title}) : super(key: key);
+  final String title;
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
       appBar: new AppBar(
-        title: new Text("Sample chat"),
-        elevation: Theme.of(context).platform == TargetPlatform.iOS ? 0.0 : 4.0,
+        title: new Text(title),
       ),
-      body: new Container(
-          child: new Column(
-            children: <Widget>[
-              new Flexible(
-                child: new ListView.builder(
-                  padding: new EdgeInsets.all(8.0),
-                  reverse: true,
-                  itemBuilder: (_, int index) => _messages[index],
-                  itemCount: _messages.length,
-                ),
-              ),
-              new Divider(
-                height: 1.0,
-              ),
-              new Container(
-                decoration:
-                    new BoxDecoration(color: Theme.of(context).cardColor),
-                child: _buildTextComposer(),
-              ),
-            ],
-          ),
-          decoration: Theme.of(context).platform == TargetPlatform.iOS
-              ? new BoxDecoration(
-                  border: new Border(
-                    top: new BorderSide(color: Colors.grey[200]),
-                  ),
-                )
-              : null),
+      body: new StreamBuilder(
+          stream: Firestore.instance.collection('baby').snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const Text('Loading...');
+            return new ListView.builder(
+                itemCount: snapshot.data.documents.length,
+                padding: const EdgeInsets.only(top: 10.0),
+                itemExtent: 25.0,
+                itemBuilder: (context, index) {
+                  DocumentSnapshot ds = snapshot.data.documents[index];
+                  return new Text("${ds['name']} ${ds['votes']}");
+                });
+          }),
     );
-  }
-
-  Widget _buildTextComposer() {
-    return new IconTheme(
-      data: new IconThemeData(color: Theme.of(context).accentColor),
-      child: new Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8.0),
-        child: new Row(
-          children: <Widget>[
-            new Flexible(
-              child: new TextField(
-                controller: _textController,
-                onChanged: (String text) {
-                  setState(() {
-                    _isComposing = text.length > 0;
-                  });
-                },
-                onSubmitted: _handleSubmitted,
-                decoration:
-                    new InputDecoration.collapsed(hintText: "Send a message"),
-              ),
-            ),
-            new Container(
-                margin: new EdgeInsets.symmetric(horizontal: 4.0),
-                child: Theme.of(context).platform == TargetPlatform.iOS
-                    ? new CupertinoButton(
-                        child: new Text("Send"),
-                        onPressed: _isComposing
-                            ? () => _handleSubmitted(_textController.text)
-                            : null,
-                      )
-                    : new IconButton(
-                        icon: new Icon(Icons.send),
-                        onPressed: _isComposing
-                            ? () => _handleSubmitted(_textController.text)
-                            : null)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    for (ChatMessage message in _messages)
-      message.animationController.dispose();
-    super.dispose();
-  }
-
-  void _handleSubmitted(String text) {
-    _textController.clear();
-    setState(() {
-      _isComposing = false;
-    });
-    ChatMessage message = new ChatMessage(
-      text: text,
-      animationController: new AnimationController(
-        duration: new Duration(microseconds: 700),
-        vsync: this,
-      ),
-    );
-    setState(() {
-      _messages.insert(0, message);
-    });
-    message.animationController.forward();
-  }
-}
-
-class ChatMessage extends StatelessWidget {
-  ChatMessage({this.text, this.animationController});
-
-  final String text;
-  final AnimationController animationController;
-
-  @override
-  Widget build(BuildContext context) {
-    return new SizeTransition(
-        sizeFactor: new CurvedAnimation(
-          parent: animationController,
-          curve: Curves.easeOut,
-        ),
-        axisAlignment: 0.0,
-        child: new Container(
-          margin: const EdgeInsets.symmetric(vertical: 10.0),
-          child: new Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              new Container(
-                margin: const EdgeInsets.only(right: 16.0),
-                child: new CircleAvatar(child: new Text(_name[0])),
-              ),
-              new Expanded(
-                child: new Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    new Text(
-                      _name,
-                      style: Theme.of(context).textTheme.subhead,
-                    ),
-                    new Container(
-                      margin: const EdgeInsets.only(top: 5.0),
-                      child: new Text(text),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ));
   }
 }
